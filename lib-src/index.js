@@ -13,7 +13,7 @@ module.exports = function init(mongoose, cacheOptions, debug) {
   require('./extend-aggregate')(mongoose, cache, debug);
 };
 
-module.exports.clearCache = function(customKey, cb = function() { }) {
-  if (!customKey) return cb();
-  cache.del(customKey, cb);
+module.exports.clearCache = function(key, cb = function() { }) {
+  if (!key) return cb();
+  cache.del(key, cb);
 };

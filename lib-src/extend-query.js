@@ -51,14 +51,10 @@ module.exports = function(mongoose, cache, debug) {
     });
   };
 
-  mongoose.Query.prototype.cache = function(ttl = 60, customKey = '') {
-    if (typeof ttl === 'string') {
-      customKey = ttl;
-      ttl = 60;
-    }
-
+  mongoose.Query.prototype.cache = function({ ttl = 60, key, prefix = ''} = {}) {
     this._ttl = ttl;
-    this._key = customKey;
+    this._key = key;
+    this._prefix = prefix;
     return this;
   };
 

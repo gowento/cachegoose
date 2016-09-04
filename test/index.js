@@ -52,11 +52,11 @@ describe('cachegoose', function() {
   });
 
   it('should cache a simple query that uses callbacks', function(done) {
-    getAll(60, function(err, res) {
+    getAll({ ttl: 60 }, function(err, res) {
       res.length.should.equal(10);
       Boolean(res._fromCache).should.be.false;
 
-      getAll(60, function(err, res) {
+      getAll({ ttl: 60 }, function(err, res) {
         res.length.should.equal(10);
         Boolean(res._fromCache).should.be.true;
         done();
@@ -65,11 +65,11 @@ describe('cachegoose', function() {
   });
 
   it('should cache a simple query that uses promises', function(done) {
-    getAll(60).then(function(res) {
+    getAll({ ttl: 60 }).then(function(res) {
       res.length.should.equal(10);
       Boolean(res._fromCache).should.be.false;
 
-      getAll(60).then(function(res) {
+      getAll({ ttl: 60 }).then(function(res) {
         res.length.should.equal(10);
         Boolean(res._fromCache).should.be.true;
         done();
@@ -78,7 +78,7 @@ describe('cachegoose', function() {
   });
 
   it('should not cache the same query w/out a ttl defined', function(done) {
-    getAll(60).then(function(res) {
+    getAll({ ttl: 60 }).then(function(res) {
       getAllNoCache(function(err, res) {
         Boolean(res._fromCache).should.be.false;
         done();
@@ -87,10 +87,10 @@ describe('cachegoose', function() {
   });
 
   it('should return a Mongoose model from cached and non-cached results', function(done) {
-    getAll(60, function(err, res) {
+    getAll({ ttl: 60 }, function(err, res) {
       var first = res[0];
 
-      getAll(60, function(err2, res2) {
+      getAll({ ttl: 60 }, function(err2, res2) {
         var cachedFirst = res2[0];
         first.constructor.name.should.equal('model');
         cachedFirst.constructor.name.should.equal('model');
@@ -104,11 +104,11 @@ describe('cachegoose', function() {
   });
 
   it('should return lean models from cached and non-cached results', function(done) {
-    getAllLean(10, function(err, res) {
+    getAllLean({ ttl: 10 }, function(err, res) {
       res.length.should.equal(10);
       Boolean(res._fromCache).should.be.false;
 
-      getAllLean(10, function(err, res2) {
+      getAllLean({ ttl: 10 }, function(err, res2) {
         res2.length.should.equal(10);
         Boolean(res2._fromCache).should.be.true;
         res[0].constructor.name.should.not.equal('model');
@@ -119,11 +119,11 @@ describe('cachegoose', function() {
   });
 
   it('should cache a query that returns no results', function(done) {
-    getNone(10, function(err, res) {
+    getNone({ ttl: 10 }, function(err, res) {
       res.length.should.equal(0);
       Boolean(res._fromCache).should.be.false;
 
-      getNone(10, function(err, res2) {
+      getNone({ ttl: 10 }, function(err, res2) {
         res2.length.should.equal(0);
         Boolean(res2._fromCache).should.be.true;
         done();
@@ -132,13 +132,13 @@ describe('cachegoose', function() {
   });
 
   it('should distinguish between lean and non lean for the same conditions', function(done) {
-    getAll(10, function(err, res) {
-      getAll(10, function(err, res2) {
+    getAll({ ttl: 10 }, function(err, res) {
+      getAll({ ttl: 10 }, function(err, res2) {
         res2.length.should.equal(10);
         Boolean(res2._fromCache).should.be.true;
         res2[0].constructor.name.should.equal('model');
 
-        getAllLean(function(err, res3) {
+        getAllLean({ ttl: 10 }, function(err, res3) {
           Boolean(res3._fromCache).should.be.false;
           res3[0].constructor.name.should.not.equal('model');
           done();
@@ -148,15 +148,15 @@ describe('cachegoose', function() {
   });
 
   it('should correctly cache queries using skip', function(done) {
-    getWithSkip(1, 10, function(err, res) {
+    getWithSkip(1, { ttl: 10 }, function(err, res) {
       Boolean(res._fromCache).should.be.false;
       res.length.should.equal(9);
 
-      getWithSkip(1, 10, function(err, res2) {
+      getWithSkip(1, { ttl: 10 }, function(err, res2) {
         Boolean(res2._fromCache).should.be.true;
         res2.length.should.equal(9);
 
-        getWithSkip(2, 10, function(err, res3) {
+        getWithSkip(2, { ttl: 10 }, function(err, res3) {
           Boolean(res3._fromCache).should.be.false;
           res3.length.should.equal(8);
           done();
@@ -166,15 +166,15 @@ describe('cachegoose', function() {
   });
 
   it('should correctly cache queries using limit', function(done) {
-    getWithLimit(5, 10, function(err, res) {
+    getWithLimit(5, { ttl: 10 }, function(err, res) {
       Boolean(res._fromCache).should.be.false;
       res.length.should.equal(5);
 
-      getWithLimit(5, 10, function(err, res2) {
+      getWithLimit(5, { ttl: 10 }, function(err, res2) {
         Boolean(res2._fromCache).should.be.true;
         res2.length.should.equal(5);
 
-        getWithLimit(4, 10, function(err, res3) {
+        getWithLimit(4, { ttl: 10 }, function(err, res3) {
           Boolean(res3._fromCache).should.be.false;
           res3.length.should.equal(4);
           done();
@@ -184,9 +184,9 @@ describe('cachegoose', function() {
   });
 
   it('should correctly cache the same query with different condition orders', function(done) {
-    getWithUnorderedQuery(10, function(err, res) {
+    getWithUnorderedQuery({ ttl: 10 }, function(err, res) {
       Boolean(res._fromCache).should.be.false;
-      getWithUnorderedQuery(10, function(err, res2) {
+      getWithUnorderedQuery({ ttl: 10 }, function(err, res2) {
         Boolean(res2._fromCache).should.be.true;
         done();
       });
@@ -194,10 +194,10 @@ describe('cachegoose', function() {
   });
 
   it('should cache a findOne query', function(done) {
-    getOne(10, function(err, res) {
+    getOne({ ttl: 10 }, function(err, res) {
       res.constructor.name.should.equal('model');
 
-      getOne(10, function(err, res2) {
+      getOne({ ttl: 10 }, function(err, res2) {
         res2.constructor.name.should.equal('model');
         Boolean(res2._fromCache).should.be.true;
         done();
@@ -206,13 +206,13 @@ describe('cachegoose', function() {
   });
 
   it('should cache a regex condition properly', function(done){
-    getAllWithRegex(10, function(err, res) {
+    getAllWithRegex({ ttl: 10 }, function(err, res) {
       Boolean(res._fromCache).should.be.false;
 
-      getAllWithRegex(10, function(err, res) {
+      getAllWithRegex({ ttl: 10 }, function(err, res) {
         Boolean(res._fromCache).should.be.true;
 
-        getNoneWithRegex(10, function(err, res) {
+        getNoneWithRegex({ ttl: 10 }, function(err, res) {
           Boolean(res._fromCache).should.be.false;
           done();
         });
@@ -221,18 +221,18 @@ describe('cachegoose', function() {
   });
 
   it('should cache a query rerun many times', function(done) {
-    getAll(60).then(function(res) {
+    getAll({ ttl: 60 }).then(function(res) {
       res.length.should.equal(10);
       Boolean(res._fromCache).should.be.false;
 
       async.series(
         new Array(20).join('.').split('').map(function() {
           return function(done) {
-            getAll(60, done);
+            getAll({ ttl: 60 }, done);
           };
         })
       , function() {
-        getAll(60, function(err, res) {
+        getAll({ ttl: 60 }, function(err, res) {
           res.length.should.equal(10);
           Boolean(res._fromCache).should.be.true;
           done();
@@ -242,9 +242,9 @@ describe('cachegoose', function() {
   });
 
   it('should expire the cache', function(done) {
-    getAll(1, function() {
+    getAll({ ttl: 1 }, function() {
       setTimeout(function() {
-        getAll(1, function(err, res) {
+        getAll({ ttl: 1 }, function(err, res) {
           Boolean(res._fromCache).should.be.false;
           done();
         });
@@ -253,9 +253,9 @@ describe('cachegoose', function() {
   });
 
   it('should cache aggregate queries', function(done) {
-    aggregate(60, function(err, res) {
+    aggregate({ ttl: 60 }, function(err, res) {
       Boolean(res._fromCache).should.be.false;
-      aggregate(60, function(err, res2) {
+      aggregate({ ttl: 60 }, function(err, res2) {
         Boolean(res2._fromCache).should.be.true;
         done();
       });
@@ -263,12 +263,12 @@ describe('cachegoose', function() {
   });
 
   it('should clear a custom cache key', function(done) {
-    getAllCustomKey(60, 'custom-key', function(err, res) {
+    getAll({ ttl: 60, key: 'custom-key' }, function(err, res) {
       Boolean(res._fromCache).should.be.false;
-      getAllCustomKey(60, 'custom-key', function(err, res2) {
+      getAll({ ttl: 60, key: 'custom-key' }, function(err, res2) {
         Boolean(res2._fromCache).should.be.true;
         cachegoose.clearCache('custom-key');
-        getAllCustomKey(60, 'custom-key', function(err, res3) {
+        getAll({ ttl: 60, key: 'custom-key' }, function(err, res3) {
           Boolean(res3._fromCache).should.be.false;
           done();
         });
@@ -277,60 +277,56 @@ describe('cachegoose', function() {
   });
 });
 
-function getAll(ttl, cb) {
-  return Record.find({}).cache(ttl).exec(cb);
-}
-
-function getAllCustomKey(ttl, key, cb) {
-  return Record.find({}).cache(ttl, key).exec(cb);
+function getAll(opts, cb) {
+  return Record.find({}).cache(opts).exec(cb);
 }
 
 function getAllNoCache(cb) {
   return Record.find({}).exec(cb);
 }
 
-function getAllLean(ttl, cb) {
-  return Record.find({}).lean().cache(ttl).exec(cb);
+function getAllLean(opts, cb) {
+  return Record.find({}).lean().cache(opts).exec(cb);
 }
 
-function getOne(ttl, cb) {
-  return Record.findOne({ num: { $gt: 2 } }).cache(ttl).exec(cb);
+function getOne(opts, cb) {
+  return Record.findOne({ num: { $gt: 2 } }).cache(opts).exec(cb);
 }
 
-function getWithSkip(skip, ttl, cb) {
-  return Record.find({}).skip(skip).cache(ttl).exec(cb);
+function getWithSkip(skip, opts, cb) {
+  return Record.find({}).skip(skip).cache(opts).exec(cb);
 }
 
-function getWithLimit(limit, ttl, cb) {
-  return Record.find({}).limit(limit).cache(ttl).exec(cb);
+function getWithLimit(limit, opts, cb) {
+  return Record.find({}).limit(limit).cache(opts).exec(cb);
 }
 
-function getNone(ttl, cb) {
-  return Record.find({ notFound: true }).cache(ttl).exec(cb);
+function getNone(opts, cb) {
+  return Record.find({ notFound: true }).cache(opts).exec(cb);
 }
 
-function getAllWithRegex(ttl, cb) {
-  return Record.find({ str: { $regex: /\d/ } }).cache(ttl).exec(cb);
+function getAllWithRegex(opts, cb) {
+  return Record.find({ str: { $regex: /\d/ } }).cache(opts).exec(cb);
 }
 
-function getNoneWithRegex(ttl, cb) {
-  return Record.find({ str: { $regex: /\d\d/ } }).cache(ttl).exec(cb);
+function getNoneWithRegex(opts, cb) {
+  return Record.find({ str: { $regex: /\d\d/ } }).cache(opts).exec(cb);
 }
 
 var flag = true;
-function getWithUnorderedQuery(ttl, cb) {
+function getWithUnorderedQuery(opts, cb) {
   flag = !flag;
   if (flag) {
-    return Record.find({ a: true, b: false }).cache(ttl).exec(cb);
+    return Record.find({ a: true, b: false }).cache(opts).exec(cb);
   } else {
-    return Record.find({ b: false, a: true }).cache(ttl).exec(cb);
+    return Record.find({ b: false, a: true }).cache(opts).exec(cb);
   }
 }
 
-function aggregate(ttl, cb) {
+function aggregate(opts, cb) {
   return Record.aggregate()
     .group({ _id: null, total: { $sum: '$num' } })
-    .cache(ttl)
+    .cache(opts)
     .exec(cb);
 }
 
